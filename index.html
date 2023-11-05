@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Estoque</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #007bff;
+            color: #fff;
+            text-align: center;
+            padding: 1rem;
+        }
+
+        h1 {
+            margin: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            background-color: #fff;
+            padding: 1rem;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px#007bff(0, 0, 0, 0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        th, td {
+            padding: 0.5rem;
+            text-align: left;
+        }
+
+        th {
+            background-color: #007bff;
+            color: #fff;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        .btn {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background-color: #0056b3;
+        }
+
+      /* Estilos para o modal */
+      .modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            z-index: 1;
+        }
+
+  /* Estilos para o botão do modal */
+  .modal-button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+        }
+
+        .modal-button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Controle de Estoque</h1>
+    </header>
+    <div class="container">
+        <h2>Lista de Produtos</h2>
+        <button class="btn" id="openModalButton">Adicionar Produto</button>
+        <table>
+            <tr>
+                <th>Produto</th>
+                <th>Descrição</th>
+                <th>Quantidade em Estoque</th>
+                <th>Ações</th>
+            </tr>
+            <tr>
+             
+            </tr>
+            <!-- Adicione mais linhas conforme necessário -->
+        </table>
+    </div>
+
+    <!-- Modal para adicionar produto -->
+    <div id="productModal" class="modal">
+        <div class="modal-content">
+            <h2 id="modalTitle">Adicionar Produto</h2>
+            <input type="hidden" id="productId">
+            <input type="text" placeholder="Nome do Produto" id="productName">
+            <input type="text" placeholder="Descrição" id="productDescription">
+            <input type="number" placeholder="Quantidade em Estoque" id="productQuantity">
+            <button class="modal-button" id="addEditProductButton">Salvar</button>
+        </div>
+    </div>
+
+    <script>
+        // JavaScript para mostrar e esconder o modal de adicionar/editar
+        const modal = document.getElementById("productModal");
+        const openModalButton = document.getElementById("openModalButton");
+        const addEditProductButton = document.getElementById("addEditProductButton");
+        const table = document.querySelector("table");
+        let editingRow = null;
+
+        openModalButton.addEventListener("click", () => {
+            modal.style.display = "block";
+            document.getElementById("modalTitle").textContent = "Adicionar Produto";
+        });
+
+        addEditProductButton.addEventListener("click", () => {
+            const productName = document.getElementById("productName").value;
+            const productDescription = document.getElementById("productDescription").value;
+            const productQuantity = document.getElementById("productQuantity").value;
+
+            if (productName && productDescription && productQuantity) {
+                if (editingRow) {
+                    // Editar o produto existente
+                    editingRow.cells[0].textContent = productName;
+                    editingRow.cells[1].textContent = productDescription;
+                    editingRow.cells[2].textContent = productQuantity;
+                    editingRow = null;
+                } else {
+                    // Adicionar o novo produto à tabela
+                    const newRow = table.insertRow(1);
+                    const cell1 = newRow.insertCell(0);
+                    const cell2 = newRow.insertCell(1);
+                    const cell3 = newRow.insertCell(2);
+                    const cell4 = newRow.insertCell(3);
+                    cell1.textContent = productName;
+                    cell2.textContent = productDescription;
+                    cell3.textContent = productQuantity;
+                    cell4.innerHTML = `<button class="btn" onclick="editarProduto(this)">Editar</button><button class="btn" onclick="excluirProduto(this)">Excluir</button>`;
+                }
+                modal.style.display = "none";
+                document.getElementById("productName").value = "";
+                document.getElementById("productDescription").value = "";
+                document.getElementById("productQuantity").value = "";
+                document.getElementById("modalTitle").textContent = "Adicionar Produto";
+            } else {
+                alert("Preencha todos os campos antes de salvar o produto.");
+            }
+        });
+
+        function excluirProduto(button) {
+            const row = button.closest("tr");
+            if (confirm("Deseja realmente excluir este produto?")) {
+                row.remove();
+            }
+        }
+
+        function editarProduto(button) {
+            editingRow = button.closest("tr");
+            document.getElementById("modalTitle").textContent = "Editar Produto";
+            document.getElementById("productName").value = editingRow.cells[0].textContent;
+            document.getElementById("productDescription").value = editingRow.cells[1].textContent;
+            document.getElementById("productQuantity").value = editingRow.cells[2].textContent;
+            modal.style.display = "block";
+        }
+    </script>
+</body>
+</html>
