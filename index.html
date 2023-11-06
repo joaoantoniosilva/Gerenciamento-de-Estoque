@@ -97,23 +97,62 @@
     <header>
         <h1>Controle de Estoque</h1>
     </header>
+    
     <div class="container">
+        <div>
+            <label for="searchField">Pesquisar:</label>
+            <input type="text" id="searchField" placeholder="Digite sua pesquisa">
+            <select id="searchType">
+                <option value="product">Pesquisar por Produto</option>
+                <option value="date">Pesquisar por Data</option>
+                <option value="quantity">Pesquisar por Quantidade</option>
+                <option value="category">Pesquisar por Categoria</option>
+            </select>
+            <button id="searchButton">Pesquisar</button>
+        </div>
+    
+        <div>
+            <label for="dateField" style="display: none;">Data:</label>
+            <input type="date" id="dateField" style="display: none;">
+        </div>
+    
+        <div>
+            <label for="quantityField" style="display: none;">Quantidade:</label>
+            <input type="number" id="quantityField" style="display: none">
+        </div>
+    
+        <div>
+            <label for="categoryField" style="display: none;">Categoria:</label>
+            <input type="text" id="categoryField" style="display: none">
+        </div>
+    
         <h2>Lista de Produtos</h2>
-        <button class="btn" id="openModalButton">Adicionar Produto</button>
-        <table>
-            <tr>
-                <th>Produto</th>
-                <th>Descrição</th>
-                <th>Quantidade em Estoque</th>
-                <th>Ações</th>
-            </tr>
-            <tr>
-             
-            </tr>
-            <!-- Adicione mais linhas conforme necessário -->
-        </table>
+        <div>
+            <button class="btn" id="openModalButton">Adicionar Produto</button>
+            <table>
+                <tr>
+                    <th>Produto</th>
+                    <th>Descrição</th>
+                    <th>Data</th>
+                    <th>Categoria</th>
+                    <th>Quantidade em Estoque</th>
+                    <th>Ações</th>
+                </tr>
+                <tr>
+                    <!-- Adicione mais linhas conforme necessário -->
+                </tr>
+            </table>
+        </div>
+    
+        <!-- Seção de resultados da pesquisa -->
+        <div id="searchResults" style="display: none;">
+            <h2>Resultados da Pesquisa</h2>
+            <table>
+                <!-- Estrutura da tabela para exibir resultados da pesquisa -->
+            </table>
+        </div>
     </div>
-
+    
     <!-- Modal para adicionar produto -->
     <div id="productModal" class="modal">
         <div class="modal-content">
@@ -121,35 +160,155 @@
             <input type="hidden" id="productId">
             <input type="text" placeholder="Nome do Produto" id="productName">
             <input type="text" placeholder="Descrição" id="productDescription">
+            <input type="date" placeholder="Data" id="productDate">
+            <input type="text" placeholder="Categoria" id="productCategory">
             <input type="number" placeholder="Quantidade em Estoque" id="productQuantity">
             <button class="modal-button" id="addEditProductButton">Salvar</button>
         </div>
     </div>
-
     <script>
-        // JavaScript para mostrar e esconder o modal de adicionar/editar
+        // Selecionar elementos do DOM
         const modal = document.getElementById("productModal");
         const openModalButton = document.getElementById("openModalButton");
         const addEditProductButton = document.getElementById("addEditProductButton");
         const table = document.querySelector("table");
+        const productNameInput = document.getElementById("productName");
+        const productDescriptionInput = document.getElementById("productDescription");
+        const productQuantityInput = document.getElementById("productQuantity");
+        const productDateInput = document.getElementById("productDate");
+        const productCategoryInput = document.getElementById("productCategory");
+        const modalTitle = document.getElementById("modalTitle");
+        const searchField = document.getElementById("searchField");
+        const searchType = document.getElementById("searchType");
+        const dateField = document.getElementById("dateField");
+        const quantityField = document.getElementById("quantityField");
+        const categoryField = document.getElementById("categoryField");
+        const searchButton = document.getElementById("searchButton");
+        const searchResultsSection = document.getElementById("searchResults");
+        const searchResultsTable = searchResultsSection.querySelector("table");
         let editingRow = null;
 
-        openModalButton.addEventListener("click", () => {
-            modal.style.display = "block";
-            document.getElementById("modalTitle").textContent = "Adicionar Produto";
+        // Função para realizar a pesquisa
+        function realizarPesquisa() {
+            const termoPesquisa = searchField.value.toLowerCase();
+            const tipoPesquisa = searchType.value;
+
+            // Obter todas as linhas da tabela, excluindo o cabeçalho
+            const linhasTabela = Array.from(table.rows).slice(1);
+
+            // Iterar pelas linhas e ocultar/mostrar com base na pesquisa
+            linhasTabela.forEach((linha) => {
+                const coluna = linha.cells[tipoPesquisa];
+
+                if (tipoPesquisa === 'date') {
+                    const dataProduto = new Date(coluna.textContent).toLocaleDateString().toLowerCase();
+                    if (dataProduto.includes(termoPesquisa)) {
+                        linha.style.display = "";
+                    } else {
+                        linha.style.display = "none";
+                    }
+                } else if (tipoPesquisa === 'quantity') {
+                    const quantidadeProduto = coluna.textContent.toLowerCase();
+                    if (quantidadeProduto.includes(termoPesquisa)) {
+                        linha.style.display = "";
+                    } else {
+                        linha.style.display = "none";
+                    }
+                } else {
+                    if (coluna.textContent.toLowerCase().includes(termoPesquisa)) {
+                        linha.style.display = "";
+                    } else {
+                        linha.style.display = "none";
+                    }
+                }
+            });
+        }
+
+        // Evento de pesquisa ao digitar
+        searchField.addEventListener("input", realizarPesquisa);
+
+        // Evento de seleção de tipo de pesquisa
+        searchType.addEventListener("change", () => {
+            const tipoPesquisa = searchType.value;
+
+            // Ocultar todos os campos de pesquisa
+            dateField.style.display = "none";
+            quantityField.style.display = "none";  // Correção: Substituído "display" por "style.display"
+            categoryField.style.display = "none";
+
+            // Mostrar o campo relevante com base no tipo de pesquisa selecionado
+            if (tipoPesquisa === 'date') {
+                dateField.style.display = "block";
+            } else if (tipoPesquisa === 'quantity') {
+                quantityField.style.display = "block";
+            } else if (tipoPesquisa === 'category') {
+                categoryField.style.display = "block";
+            }
         });
 
-        addEditProductButton.addEventListener("click", () => {
-            const productName = document.getElementById("productName").value;
-            const productDescription = document.getElementById("productDescription").value;
-            const productQuantity = document.getElementById("productQuantity").value;
+        // Evento de clique no botão de pesquisa
+        searchButton.addEventListener("click", () => {
+            const termoPesquisa = searchField.value.toLowerCase();
+            const tipoPesquisa = searchType.value;
 
-            if (productName && productDescription && productQuantity) {
+            // Obter todas as linhas da tabela, excluindo o cabeçalho
+            const linhasTabela = Array.from(table.rows).slice(1);
+
+            // Filtrar os resultados da pesquisa
+            const resultadosPesquisa = linhasTabela.filter((linha) => {
+                const coluna = linha.cells[tipoPesquisa];
+                if (tipoPesquisa === 'date') {
+                    const dataProduto = new Date(coluna.textContent).toLocaleDateString().toLowerCase();
+                    return dataProduto.includes(termoPesquisa);
+                } else if (tipoPesquisa === 'quantity') {
+                    const quantidadeProduto = coluna.textContent.toLowerCase();
+                    return quantidadeProduto.includes(termoPesquisa);
+                } else {
+                    return coluna.textContent.toLowerCase().includes(termoPesquisa);
+                }
+            });
+
+            // Limpar a seção de resultados
+            searchResultsTable.innerHTML = '';
+
+            // Mostrar os resultados na seção de resultados
+            if (resultadosPesquisa.length > 0) {
+                resultadosPesquisa.forEach((linha) => {
+                    const newRow = searchResultsTable.insertRow();
+                    for (let i = 0; i < 5; i++) {
+                        const cell = newRow.insertCell(i);
+                        cell.textContent = linha.cells[i].textContent;
+                    }
+                });
+                searchResultsSection.style.display = "block";
+            } else {
+                searchResultsSection.style.display = "none";
+                alert("Nenhum resultado encontrado.");
+            }
+        });
+
+        // Abrir o modal para adicionar um novo produto
+        openModalButton.addEventListener("click", () => {
+            modal.style.display = "block";
+            modalTitle.textContent = "Adicionar Produto";
+        });
+
+        // Adicionar ou editar um produto
+        addEditProductButton.addEventListener("click", () => {
+            const productName = productNameInput.value;
+            const productDescription = productDescriptionInput.value;
+            const productQuantity = productQuantityInput.value;
+            const productDate = productDateInput.value;
+            const productCategory = productCategoryInput.value;
+
+            if (productName && productDescription && productQuantity && productDate && productCategory) {
                 if (editingRow) {
                     // Editar o produto existente
                     editingRow.cells[0].textContent = productName;
                     editingRow.cells[1].textContent = productDescription;
-                    editingRow.cells[2].textContent = productQuantity;
+                    editingRow.cells[2].textContent = productDate;
+                    editingRow.cells[3].textContent = productCategory;
+                    editingRow.cells[4].textContent = productQuantity;
                     editingRow = null;
                 } else {
                     // Adicionar o novo produto à tabela
@@ -158,35 +317,43 @@
                     const cell2 = newRow.insertCell(1);
                     const cell3 = newRow.insertCell(2);
                     const cell4 = newRow.insertCell(3);
+                    const cell5 = newRow.insertCell(4);
+                    const cell6 = newRow.insertCell(5);
                     cell1.textContent = productName;
                     cell2.textContent = productDescription;
-                    cell3.textContent = productQuantity;
-                    cell4.innerHTML = `<button class="btn" onclick="editarProduto(this)">Editar</button><button class="btn" onclick="excluirProduto(this)">Excluir</button>`;
+                    cell3.textContent = productDate;
+                    cell4.textContent = productCategory;
+                    cell5.textContent = productQuantity;
+                    cell6.innerHTML = `<button class="btn" onclick="editarProduto(this)">Editar</button><button class="btn" onclick="excluirProduto(this)">Excluir</button>`;
                 }
+                // Limpar os campos do modal
+                productNameInput.value = "";
+                productDescriptionInput.value = "";
+                productQuantityInput.value = "";
+                productDateInput.value = "";
+                productCategoryInput.value = "";
                 modal.style.display = "none";
-                document.getElementById("productName").value = "";
-                document.getElementById("productDescription").value = "";
-                document.getElementById("productQuantity").value = "";
-                document.getElementById("modalTitle").textContent = "Adicionar Produto";
             } else {
-                alert("Preencha todos os campos antes de salvar o produto.");
+                alert("Preencha todos os campos do produto.");
             }
         });
 
-        function excluirProduto(button) {
-            const row = button.closest("tr");
-            if (confirm("Deseja realmente excluir este produto?")) {
-                row.remove();
-            }
+        // Função para editar um produto
+        function editarProduto(button) {
+            editingRow = button.parentElement.parentElement;
+            productNameInput.value = editingRow.cells[0].textContent;
+            productDescriptionInput.value = editingRow.cells[1].textContent;
+            productDateInput.value = editingRow.cells[2].textContent;
+            productCategoryInput.value = editingRow.cells[3].textContent;
+            productQuantityInput.value = editingRow.cells[4].textContent;
+            modal.style.display = "block";
+            modalTitle.textContent = "Editar Produto";
         }
 
-        function editarProduto(button) {
-            editingRow = button.closest("tr");
-            document.getElementById("modalTitle").textContent = "Editar Produto";
-            document.getElementById("productName").value = editingRow.cells[0].textContent;
-            document.getElementById("productDescription").value = editingRow.cells[1].textContent;
-            document.getElementById("productQuantity").value = editingRow.cells[2].textContent;
-            modal.style.display = "block";
+        // Função para excluir um produto
+        function excluirProduto(button) {
+            const row = button.parentElement.parentElement;
+            table.deleteRow(row.rowIndex);
         }
     </script>
 </body>
